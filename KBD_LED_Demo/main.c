@@ -83,13 +83,13 @@ void DemoLed(int led)
 	switch(ledstatus[led == ledstatus[2]]++)
 	{
 		case 0:
-			SetTimeLED(led, 100, 50,0);
+			SetTimeLED(led, 100, 100,0);
 			break;
 		case 1:
-			SetTimeLED(led, 500, 200,0);
+			SetTimeLED(led, 300, 300,0);
 			break;
 		case 2:
-			SetTimeLED(led, 200, 700,0);
+			SetTimeLED(led, 100, 700,0);
 			break;
 		case 3:
 			SetTimeLED(led, UINT16_MAX, 0,0);
