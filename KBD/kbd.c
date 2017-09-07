@@ -16,7 +16,7 @@ static inline _CALLBACK(int key)
 #if KBDCALLBACKENABLED == 1
 	if(Buttons[key].callback != NULL)
 	{
-		Buttons[key].callback(key);
+		Buttons[key].callback(Buttons[key].status);
 	}
 #endif
 }
