@@ -9,9 +9,21 @@
 #include "stm32f1xx.h"
 #include "kbd.h"
 
-
 volatile static BUTTON_Status_T Buttons[NKEYS];
 
+static inline _CALLBACK(int key)
+{
+#if KBDCALLBACKENABLED == 1
+	if(Buttons[key].callback != NULL)
+	{
+		Buttons[key].callback(key);
+	}
+#endif
+}
+
+
+
+#if KBDCALLBACKENABLED == 0
 int KBD_addKey(GPIO_TypeDef *gpio, int pin, int type)
 {
 	int result = -1;
@@ -33,6 +45,32 @@ int KBD_addKey(GPIO_TypeDef *gpio, int pin, int type)
 	return result;
 }
 
+#else
+
+int KBD_addKey(GPIO_TypeDef *gpio, int pin, int type, void (*cb)(int))
+{
+	int result = -1;
+
+	for(int i = 0; i < NKEYS; i ++)
+	{
+		if(Buttons[i].gpio == NULL)
+		{
+			Buttons[i].gpio = gpio;
+			Buttons[i].pinmask = (1 << pin);
+			Buttons[i].status_data = 0;
+			Buttons[i].type = type;
+			Buttons[i].debouncing = 0;
+			Buttons[i].counter = DEBOUNCE;
+			Buttons[i].callback = cb;
+			result = i;
+			break;
+		}
+	}
+	return result;
+}
+#endif
+
+
 static inline int KBD_GetPIN(int key)
 {
 	int status = Buttons[key].gpio -> IDR & Buttons[key].pinmask;
@@ -46,7 +84,6 @@ int KBD_GetKey(int key)
 
 	Buttons[key].status = NOKEY;
 	return result;
-
 }
 
 static inline void _KBDSetKey(int key, int st)
@@ -97,8 +134,10 @@ void KBD_ISR_Callback(void)
 					{
 						_KBDSetKey(i, LONGKEY);
 						Buttons[i].debounced = 0;
+						Buttons[i].debouncing = 0;
 						Buttons[i].wait_for_realease = 0;
 						Buttons[i].counter = DEBOUNCE;
+						_CALLBACK(LONGKEY);
 						continue;
 					}
 
@@ -112,8 +151,10 @@ void KBD_ISR_Callback(void)
 						{
 							_KBDSetKey(key, KEY);
 							Buttons[i].debounced = 0;
+							Buttons[i].debouncing = 0;
 							Buttons[i].wait_for_realease = 0;
 							Buttons[i].counter = DEBOUNCE;
+							_CALLBACK(KEY);
 							continue;
 						}
 					}
