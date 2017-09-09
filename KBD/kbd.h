@@ -53,22 +53,22 @@ typedef struct {
 	};
 	uint8_t 	pinmask;
 	uint16_t	counter;
-	uint8_t		status;
+	char		status;
 #if KBDCALLBACKENABLED == 1
-	void (*callback)();
+	void (*callback)(int,int);
 #endif
 }BUTTON_Status_T;
 
 #define __KBD_DIVIDER		8
 #define NKEYS	  			5
-#define DEBOUNCE			(64 / __KBD_DIVIDER)
+#define DEBOUNCE			(80 / __KBD_DIVIDER)
 #define LONGCLICK			(1500 / __KBD_DIVIDER)
-#define DC_GAP				(200 / __KBD_DIVIDER)
+#define DC_GAP				(300 / __KBD_DIVIDER)
 
 #if KBDCALLBACKENABLED == 0
 int KBD_addKey(GPIO_TypeDef *gpio, int pin, int type);
 #else
-int KBD_addKey(GPIO_TypeDef *gpio, int pin, int type, void (*)(int));
+int KBD_addKey(GPIO_TypeDef *gpio, int pin, int type, void (*)(int,int));
 #endif
 
 int KBD_GetKey(int key);
