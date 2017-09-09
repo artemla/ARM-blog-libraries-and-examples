@@ -34,10 +34,9 @@
 #include "main.h"
 #include "stm32f1xx_hal.h"
 
-#include "led.h"
-#include "kbd.h"
-
 /* USER CODE BEGIN Includes */
+#include "kbd.h"
+#include "led.h"
 
 /* USER CODE END Includes */
 
@@ -71,40 +70,77 @@ void HAL_SYSTICK_Callback(void)
 	KBD_ISR_Callback();
 }
 
+int myled;
+int myled1;
+int myled2;
+int myled3;
+int myled4;
+int myled5;
+
+void KBDCallBack_01(int key, int action)
+{
+	switch(action)
+	{
+		case KEY:
+			ToggleLED(myled2);
+			break;
+		case LONGKEY:
+			ToggleLED(myled3);
+			break;
+		case DOUBLECLICK:
+			ToggleLED(myled5);
+			break;
+
+	}
+}
+
 
 void DemoLed(int led)
 {
-	static uint8_t ledstatus[3] = {UINT8_MAX, 0, };
+	static uint8_t ledstatus[2][3] = {{UINT8_MAX, UINT8_MAX, UINT8_MAX},{}};
 
-	if(ledstatus[2] == UINT8_MAX)                // first call
+	for(int i = 0; i < sizeof(ledstatus[0]); i++)
 	{
-		ledstatus[2] = led;
+		if(ledstatus[0][i] == UINT8_MAX)                // first call
+		{
+			ledstatus[0][i] = led;
+			return;
+		}
 	}
-	switch(ledstatus[led == ledstatus[2]]++)
+#if GLOBALONOFFSUPPORT == 0
+	for(int i = 0; i < sizeof(ledstatus[0]); i++)
 	{
-		case 0:
-			SetTimeLED(led, 100, 100,0);
-			break;
-		case 1:
-			SetTimeLED(led, 300, 300,0);
-			break;
-		case 2:
-			SetTimeLED(led, 100, 700,0);
-			break;
-		case 3:
-			SetTimeLED(led, UINT16_MAX, 0,0);
-			break;
-		case 4:
-			SetTimeLED(led, 0, 0,0);
-			ledstatus[led == ledstatus[2]] = 0;
-			break;
+		if(ledstatus[0][i] == led)
+		{
+			switch(ledstatus[1][i]++)
+			{
+				case 0:
+					SetTimeLED(led, 100, 100,0);
+					break;
+				case 1:
+					SetTimeLED(led, 300, 300,0);
+					break;
+				case 2:
+					SetTimeLED(led, 100, 700,0);
+					break;
+				case 3:
+					SetTimeLED(led, UINT16_MAX, 0,0);
+					break;
+				case 4:
+					SetTimeLED(led, 0, 0,0);
+					ledstatus[1][i] = 0;
+					break;
+			}
+		}
 	}
+#endif
 }
 
 /* USER CODE END 0 */
 
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -123,10 +159,30 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-  int myled = AddLED(GPIOC, 13, 0, NULL);
-  int myled1 = AddLED(GPIOB, 8, 0, NULL);
+  myled = AddLED(GPIOC, 13, 0, NULL);
+  myled1 = AddLED(GPIOB, 8, 0, NULL);
+  myled2 = AddLED(GPIOB, 12, 0, NULL);
+  myled3 = AddLED(GPIOB, 13, 0, NULL);
+  myled4 = AddLED(GPIOB, 5, 0, NULL);
+  myled5 = AddLED(GPIOB, 11, 0, NULL);
 
-  int mykey1 = KBD_addKey(GPIOA, 7, LO);
+#if GLOBALONOFFSUPPORT == 1
+  SetTimeLED(myled1,100,100,0,1000,1000);
+  SetTimeLED(myled, 60,60,0,700,700);
+  SetTimeLED(myled2,200,80,0,2000,2000);
+  SetTimeLED(myled3,200,100,0,2000,1000);
+  SetTimeLED(myled4,200,200,0,3000,1000);
+  SetTimeLED(myled5,100,100,0,3000,1000);
+  while(1);
+#endif
+
+
+  int mykey1 = KBD_addKey(GPIOA, 7, LO, KBDCallBack_01);
+//  int mykey1 = KBD_addKey(GPIOA, 7, LO, NULL);
+
+  DemoLed(myled);
+  DemoLed(myled1);
+  DemoLed(myled4);
 
   /* USER CODE END 2 */
 
@@ -134,15 +190,27 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	  while(1)
 	  {
-		  int key;
-		  while((key = KBD_GetKey(mykey1)) == NOKEY);
-		  switch(key)
+		  switch(KBD_GetKey(mykey1))
 		  {
 		  case LONGKEY:
 			  DemoLed(myled1);
+			  //ToggleLED(myled1);
 			  break;
 		  case KEY:
 			  DemoLed(myled);
+			  //DemoLed(myled4);
+			  //ToggleLED(myled);
+			  //ToggleLED(myled4);
+			  break;
+		  case DOUBLECLICK:
+			  DemoLed(myled4);
+			  //ToggleLED(myled3);
+			  break;
+		  case NOKEY:
+			  //if(in) __BKPT();
+			  break;
+		  default:
+			  //DemoLed(myled4);
 			  break;
 		  }
 	  }
@@ -152,9 +220,10 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 
-  }
+
   /* USER CODE END 3 */
 
+}
 
 /** System Clock Configuration
 */
@@ -246,7 +315,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_5 
+                          |GPIO_PIN_8, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
@@ -260,8 +330,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  /*Configure GPIO pins : PB11 PB12 PB13 PB5 
+                           PB8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_5 
+                          |GPIO_PIN_8;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
