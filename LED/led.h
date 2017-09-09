@@ -31,7 +31,7 @@
 #define SOURCE				1
 
 #define CALLBACKSUPPORT		1				// End of blink callback
-#define GLOBALONOFFSUPPORT  1				// global on/off
+#define GLOBALONOFFSUPPORT  0				// global on/off
 
 #define LED_DIVIDER			10				// Offload SysTick handler by skipping some of them
 
