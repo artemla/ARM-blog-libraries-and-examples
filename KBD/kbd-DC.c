@@ -141,7 +141,7 @@ void KBD_ISR_Callback(void)
 					{
 						_CALLBACK(i, DOUBLECLICK);
 						_KBDSetKey(i, DOUBLECLICK);
-						//Buttons[i].debounced = 0;
+						Buttons[i].debounced = 0;
 						Buttons[i].debouncing = 0;
 						Buttons[i].wait_for_realease = 0;
 						Buttons[i].wait_for_DC = 0;
@@ -152,7 +152,7 @@ void KBD_ISR_Callback(void)
 					{
 						_CALLBACK(i, LONGKEY);
 						_KBDSetKey(i, LONGKEY);
-						//Buttons[i].debounced = 0;
+						Buttons[i].debounced = 0;
 						Buttons[i].debouncing = 0;
 						Buttons[i].wait_for_realease = 0;
 						Buttons[i].wait_for_DC = 0;
@@ -175,7 +175,7 @@ void KBD_ISR_Callback(void)
 						{
 							_CALLBACK(i, KEY);
 							_KBDSetKey(i, KEY);
-							//Buttons[i].debounced = 0;
+							Buttons[i].debounced = 0;
 							Buttons[i].debouncing = 0;
 							Buttons[i].wait_for_realease = 0;
 							Buttons[i].wait_for_DC = 0;
