@@ -210,7 +210,7 @@ void KBD_ISR_Callback(void)
 						continue;
 					}
 
-				}
+				} 
 			}
 		}
 	}
