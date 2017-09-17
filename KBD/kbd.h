@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 #define KBDCALLBACKENABLED 	1
+#define KEYEVENTSCALLBACKS  1
 
 typedef enum
 {
@@ -25,6 +26,8 @@ typedef enum
 	KEY,
 	LONGKEY,
 	DOUBLECLICK,
+	KEYUP,
+	KEYDOWN,
 	KEYERROR,
 }KEYSTROKES_T;
 
@@ -64,6 +67,13 @@ typedef struct {
 #define DEBOUNCE			(80 / __KBD_DIVIDER)
 #define LONGCLICK			(1500 / __KBD_DIVIDER)
 #define DC_GAP				(300 / __KBD_DIVIDER)
+
+#if KEYEVENTSCALLBACKS == 1
+
+typedef void (*KBD_Callback_T)(int, int);
+KBD_Callback_T KBD_SetCallbacks(int key, void (*kbdcallback)(int,int));
+
+#endif
 
 #if KBDCALLBACKENABLED == 0
 int KBD_addKey(GPIO_TypeDef *gpio, int pin, int type);
