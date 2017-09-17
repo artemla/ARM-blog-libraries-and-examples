@@ -9,7 +9,7 @@
 #include "stm32f1xx.h"
 #include "kbd.h"
 
-volatile static BUTTON_Status_T Buttons[NKEYS];
+static volatile BUTTON_Status_T Buttons[NKEYS];
 
 static inline void _CALLBACK(int k, char st)
 {
@@ -20,6 +20,19 @@ static inline void _CALLBACK(int k, char st)
 	}
 #endif
 }
+
+#if KEYEVENTSCALLBACKS == 1
+void (*keyEVENTcallback[NKEYS])(int,int);
+
+KBD_Callback_T KBD_SetCallbacks(int key, void (*kbdcallback)(int,int))
+{
+	void (*tmp)(int,int) = keyEVENTcallback[key];
+
+	keyEVENTcallback[key] = kbdcallback;
+	return tmp;
+}
+#endif
+
 
 
 
@@ -111,6 +124,12 @@ static inline uint32_t KBD_GetTick(void)
 }
 #endif
 
+static inline void KEYEVENT(int key, int event)
+{
+#if KEYEVENTSCALLBACKS == 1
+	if(keyEVENTcallback[key] != NULL) keyEVENTcallback[key](key, event);
+#endif
+}
 
 void KBD_ISR_Callback(void)
 {
@@ -128,6 +147,7 @@ void KBD_ISR_Callback(void)
 			if(!Buttons[i].debounced && --Buttons[i].counter)
 				continue;					//debounce
 			Buttons[i].debounced = 1;
+			KEYEVENT(i, key ? KEYUP : KEYDOWN);
 			if(key) Buttons[i].wait_for_realease  = 1;
 			Buttons[i].previous_key = key;
 		}
