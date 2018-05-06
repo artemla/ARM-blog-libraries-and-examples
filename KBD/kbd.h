@@ -54,7 +54,7 @@ typedef struct {
 			uint8_t debounced			: 1;
 		};
 	};
-	uint8_t 	pinmask;
+	uint16_t 	pinmask;
 	uint16_t	counter;
 	char		status;
 #if KBDCALLBACKENABLED == 1
